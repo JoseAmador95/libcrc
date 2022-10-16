@@ -1,0 +1,87 @@
+cmake_minimum_required(VERSION 3.22.1)
+# set(CMAKE_C_STANDARD 99)
+project(libcrc VERSION 2.0)
+enable_language(C CXX)
+
+set(LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib)
+set(CMAKE_STATIC_LIBRARY_PREFIX "")
+
+set(PRC_DIR precalc)
+set(PRC_EXE prc)
+file(GLOB PRC_SRC ${PRC_DIR}/*.c)
+add_executable(${PRC_EXE} ${PRC_SRC})
+target_include_directories(${PRC_EXE} PUBLIC ${PRC_DIR} include tab)
+target_compile_definitions(${PRC_EXE} PUBLIC LIBCRC_ENABLE_ALL)
+target_compile_options(${PRC_EXE} PUBLIC -O3)
+set(CRC32_TABLE_FILE ${CMAKE_CURRENT_SOURCE_DIR}/tab/gentab32.inc)
+set(CRC64_TABLE_FILE ${CMAKE_CURRENT_SOURCE_DIR}/tab/gentab64.inc)
+add_custom_target(
+    CRC32_TABLE 
+    COMMAND ${PRC_EXE} --crc32 ${CRC32_TABLE_FILE} 
+    DEPENDS ${PRC_EXE} 
+    BYPRODUCTS ${CRC32_TABLE_FILE}
+)
+
+add_custom_target(
+    CRC64_TABLE 
+    COMMAND ${PRC_EXE} --crc64 ${CRC64_TABLE_FILE} 
+    DEPENDS ${PRC_EXE} 
+    BYPRODUCTS ${CRC64_TABLE_FILE}
+)
+
+set(CRC_SRC)
+set(CRC_DEF)
+
+if(CRC8_ENABLED)
+list(APPEND CRC_SRC src/crc8.c)
+list(APPEND CRC_DEF LIBCRC_CRC8_ENABLED)
+endif(CRC8_ENABLED)
+
+if(CRC16_ENABLED)
+list(APPEND CRC_SRC src/crc16.c)
+list(APPEND CRC_DEF LIBCRC_CRC16_ENABLED)
+endif(CRC16_ENABLED)
+
+if(CRC32_ENABLED)
+list(APPEND CRC_SRC src/crc32.c)
+list(APPEND CRC_DEF LIBCRC_CRC32_ENABLED)
+endif(CRC32_ENABLED)
+
+if(CRC64_ENABLED)
+list(APPEND CRC_SRC src/crc64.c)
+list(APPEND CRC_DEF LIBCRC_CRC64_ENABLED)
+endif(CRC64_ENABLED)
+
+if(CCITT_ENABLED)
+list(APPEND CRC_SRC src/crcccitt.c)
+list(APPEND CRC_DEF LIBCRC_CCITT_ENABLED)
+endif(CCITT_ENABLED)
+
+if(DNP_ENABLED)
+list(APPEND CRC_SRC src/crcdnp.c)
+list(APPEND CRC_DEF LIBCRC_DNP_ENABLED)
+endif(DNP_ENABLED)
+
+if(KERMIT_ENABLED)
+list(APPEND CRC_SRC src/crckrmit.c)
+list(APPEND CRC_DEF LIBCRC_KERMIT_ENABLED)
+endif(KERMIT_ENABLED)
+
+if(SICK_ENABLED)
+list(APPEND CRC_SRC src/crcsick.c)
+list(APPEND CRC_DEF LIBCRC_SICK_ENABLED)
+endif(SICK_ENABLED)
+
+if(NMEA_ENABLED)
+list(APPEND CRC_SRC src/nmea-chk.c)
+list(APPEND CRC_DEF LIBCRC_NMEA_ENABLED)
+endif(NMEA_ENABLED)
+
+add_library(${PROJECT_NAME} ${CRC_SRC} include/checksum.h)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+add_compile_definitions(${PROJECT_NAME} ${CRC_DEF})
+
+if(CRC32_ENABLED OR CRC64_ENABLED)
+add_dependencies(${PROJECT_NAME} CRC32_TABLE)
+add_dependencies(${PROJECT_NAME} CRC64_TABLE)
+endif(CRC32_ENABLED OR CRC64_ENABLED)

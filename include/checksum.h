@@ -16,7 +16,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -31,6 +31,7 @@
  * for routines that can be used to calculate several kinds of checksums.
  */
 
+// clang-format off
 #ifndef DEF_LIBCRC_CHECKSUM_H
 #define DEF_LIBCRC_CHECKSUM_H
 
@@ -41,6 +42,18 @@
 extern "C" {
 #endif
 
+#ifdef LIBCRC_ENABLE_ALL
+#define LIBCRC_CRC8_ENABLED
+#define LIBCRC_CRC16_ENABLED
+#define LIBCRC_CRC32_ENABLED
+#define LIBCRC_CRC64_ENABLED
+#define LIBCRC_CCITT_ENABLED
+#define LIBCRC_DNP_ENABLED
+#define LIBCRC_KERMIT_ENABLED
+#define LIBCRC_SICK_ENABLED
+#define LIBCRC_NMEA_ENABLED
+#endif
+
 /*
  * #define CRC_POLY_xxxx
  *
@@ -48,13 +61,27 @@ extern "C" {
  * known CRC calculations.
  */
 
-#define		CRC_POLY_16		0xA001
-#define		CRC_POLY_32		0xEDB88320ul
-#define		CRC_POLY_64		0x42F0E1EBA9EA3693ull
-#define		CRC_POLY_CCITT		0x1021
-#define		CRC_POLY_DNP		0xA6BC
-#define		CRC_POLY_KERMIT		0x8408
-#define		CRC_POLY_SICK		0x8005
+#ifdef LIBCRC_CRC16_ENABLED
+#define	CRC_POLY_16		0xA001
+#endif
+#ifdef LIBCRC_CRC32_ENABLED
+#define	CRC_POLY_32		0xEDB88320ul
+#endif
+#ifdef LIBCRC_CRC64_ENABLED
+#define	CRC_POLY_64		0x42F0E1EBA9EA3693ull
+#endif
+#ifdef LIBCRC_CCITT_ENABLED
+#define	CRC_POLY_CCITT	0x1021
+#endif
+#ifdef LIBCRC_DNP_ENABLED
+#define	CRC_POLY_DNP	0xA6BC
+#endif
+#ifdef LIBCRC_KERMIT_ENABLED
+#define	CRC_POLY_KERMIT	0x8408
+#endif
+#ifdef LIBCRC_SICK_ENABLED
+#define	CRC_POLY_SICK	0x8005
+#endif
 
 /*
  * #define CRC_START_xxxx
@@ -63,54 +90,93 @@ extern "C" {
  * initialization of a CRC value for common used calculation methods.
  */
 
+#ifdef LIBCRC_CRC8_ENABLED
 #define		CRC_START_8		0x00
+#endif
+#ifdef LIBCRC_CRC16_ENABLED
 #define		CRC_START_16		0x0000
 #define		CRC_START_MODBUS	0xFFFF
+#endif
+#ifdef LIBCRC_CCITT_ENABLED
 #define		CRC_START_XMODEM	0x0000
 #define		CRC_START_CCITT_1D0F	0x1D0F
 #define		CRC_START_CCITT_FFFF	0xFFFF
+#endif
+#ifdef LIBCRC_KERMIT_ENABLED
 #define		CRC_START_KERMIT	0x0000
+#endif
+#ifdef LIBCRC_SICK_ENABLED
 #define		CRC_START_SICK		0x0000
+#endif
+#ifdef LIBCRC_DNP_ENABLED
 #define		CRC_START_DNP		0x0000
+#endif
+#ifdef LIBCRC_CRC32_ENABLED
 #define		CRC_START_32		0xFFFFFFFFul
+#endif
+#ifdef LIBCRC_CRC64_ENABLED
 #define		CRC_START_64_ECMA	0x0000000000000000ull
 #define		CRC_START_64_WE		0xFFFFFFFFFFFFFFFFull
+#endif
 
 /*
  * Prototype list of global functions
  */
 
+#ifdef LIBCRC_NMEA_ENABLED
 unsigned char *		checksum_NMEA(      const unsigned char *input_str, unsigned char *result  );
+#endif
+#ifdef LIBCRC_CRC8_ENABLED
 uint8_t			crc_8(              const unsigned char *input_str, size_t num_bytes       );
+uint8_t			update_crc_8(       uint8_t  crc, unsigned char c                          );
+#endif
+#ifdef LIBCRC_CRC16_ENABLED
 uint16_t		crc_16(             const unsigned char *input_str, size_t num_bytes       );
+uint16_t		crc_modbus(         const unsigned char *input_str, size_t num_bytes       );
+uint16_t		update_crc_16(      uint16_t crc, unsigned char c                          );
+#endif
+#ifdef LIBCRC_CRC32_ENABLED
 uint32_t		crc_32(             const unsigned char *input_str, size_t num_bytes       );
+uint32_t		update_crc_32(      uint32_t crc, unsigned char c                          );
+#endif
+#ifdef LIBCRC_CRC64_ENABLED
 uint64_t		crc_64_ecma(        const unsigned char *input_str, size_t num_bytes       );
 uint64_t		crc_64_we(          const unsigned char *input_str, size_t num_bytes       );
+uint64_t		update_crc_64_ecma( uint64_t crc, unsigned char c                          );
+#endif
+#ifdef LIBCRC_CCITT_ENABLED
 uint16_t		crc_ccitt_1d0f(     const unsigned char *input_str, size_t num_bytes       );
 uint16_t		crc_ccitt_ffff(     const unsigned char *input_str, size_t num_bytes       );
-uint16_t		crc_dnp(            const unsigned char *input_str, size_t num_bytes       );
-uint16_t		crc_kermit(         const unsigned char *input_str, size_t num_bytes       );
-uint16_t		crc_modbus(         const unsigned char *input_str, size_t num_bytes       );
-uint16_t		crc_sick(           const unsigned char *input_str, size_t num_bytes       );
 uint16_t		crc_xmodem(         const unsigned char *input_str, size_t num_bytes       );
-uint8_t			update_crc_8(       uint8_t  crc, unsigned char c                          );
-uint16_t		update_crc_16(      uint16_t crc, unsigned char c                          );
-uint32_t		update_crc_32(      uint32_t crc, unsigned char c                          );
-uint64_t		update_crc_64_ecma( uint64_t crc, unsigned char c                          );
 uint16_t		update_crc_ccitt(   uint16_t crc, unsigned char c                          );
+#endif
+#ifdef LIBCRC_DNP_ENABLED
+uint16_t		crc_dnp(            const unsigned char *input_str, size_t num_bytes       );
 uint16_t		update_crc_dnp(     uint16_t crc, unsigned char c                          );
+#endif
+#ifdef LIBCRC_KERMIT_ENABLED
+uint16_t		crc_kermit(         const unsigned char *input_str, size_t num_bytes       );
 uint16_t		update_crc_kermit(  uint16_t crc, unsigned char c                          );
+#endif
+#ifdef LIBCRC_SICK_ENABLED
+uint16_t		crc_sick(           const unsigned char *input_str, size_t num_bytes       );
 uint16_t		update_crc_sick(    uint16_t crc, unsigned char c, unsigned char prev_byte );
+#endif
 
 /*
  * Global CRC lookup tables
  */
 
+#ifdef LIBCRC_CRC32_ENABLED
 extern const uint32_t	crc_tab32[];
+#endif
+#ifdef LIBCRC_CRC64_ENABLED
 extern const uint64_t	crc_tab64[];
+#endif
 
 #ifdef __cplusplus
 }// Extern C
 #endif
 
 #endif  // DEF_LIBCRC_CHECKSUM_H
+// clang-format on
